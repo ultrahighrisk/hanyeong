@@ -1,14 +1,23 @@
 document.addEventListener("mousemove", function (e) {
   let hoveredWord = getWordAtPoint(e.target, e.clientX, e.clientY);
   if (hoveredWord) {
-    console.log("Word: " + hoveredWord);
+    if (isKorean(hoveredWord)) {
+      console.log("Word: " + hoveredWord);
+    }
   }
 
   let hoveredCharacter = getCharacterAtPoint(e.target, e.clientX, e.clientY);
   if (hoveredCharacter) {
-    console.log("Character: " + hoveredCharacter);
+    if (isKorean(hoveredCharacter)) {
+      console.log("Character: " + hoveredCharacter);
+    }
   }
 });
+
+const isKorean = (input) => {
+  const match = input.match(/[\u3130-\u318F\uAC00-\uD7AF]/g);
+  return match ? match.length === input.length : false;
+};
 
 function getCharacterAtPoint(elem, x, y) {
   if (elem.nodeType === Node.TEXT_NODE) {
