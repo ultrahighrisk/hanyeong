@@ -18,5 +18,11 @@
       "js": ["scripts/content.js"],
       "matches": ["https://*/*", "http://*/*"]
     }
-  ]
+  ],
+  "web_accessible_resources": [
+      {
+        "resources": ["data/dict_most_frequent.json"],
+        "matches": ["<all_urls>"]
+      }
+    ]
 }

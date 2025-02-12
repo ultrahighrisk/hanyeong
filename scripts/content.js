@@ -1,15 +1,46 @@
+const jsonUrl = chrome.runtime.getURL("data/dict_most_frequent.json");
+let db;
+
+fetch(jsonUrl)
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then((data) => {
+    console.log("Loaded JSON:", data[0]);
+    db = data;
+  })
+  .catch((error) => {
+    console.error("Error loading JSON:", error);
+  });
+
 document.addEventListener("mousemove", function (e) {
   let hoveredWord = getWordAtPoint(e.target, e.clientX, e.clientY);
   if (hoveredWord) {
     if (isKorean(hoveredWord)) {
-      console.log("Word: " + hoveredWord);
+      // console.log("Word: " + hoveredWord);
+      if (db !== null) {
+        let isMatch = false;
+        for (let i in db) {
+          if (hoveredWord == db[i].Hangul || hoveredWord == db[i].TypeKr) {
+            console.log("Matched entry for: " + hoveredWord, db[i]);
+            isMatch = true;
+          }
+        }
+
+        if (!isMatch) {
+          console.log("Match not found!");
+        }
+      }
     }
   }
 
   let hoveredCharacter = getCharacterAtPoint(e.target, e.clientX, e.clientY);
   if (hoveredCharacter) {
     if (isKorean(hoveredCharacter)) {
-      console.log("Character: " + hoveredCharacter);
+      // console.log("Character: " + hoveredCharacter);
     }
   }
 });
