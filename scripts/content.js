@@ -1,9 +1,52 @@
 document.addEventListener("mousemove", function (e) {
-  let hoveredText = getWordAtPoint(e.target, e.clientX, e.clientY);
-  if (hoveredText) {
-    console.log(hoveredText);
+  let hoveredWord = getWordAtPoint(e.target, e.clientX, e.clientY);
+  if (hoveredWord) {
+    console.log("Word: " + hoveredWord);
+  }
+
+  let hoveredCharacter = getCharacterAtPoint(e.target, e.clientX, e.clientY);
+  if (hoveredCharacter) {
+    console.log("Character: " + hoveredCharacter);
   }
 });
+
+function getCharacterAtPoint(elem, x, y) {
+  if (elem.nodeType === Node.TEXT_NODE) {
+    var range = document.createRange();
+    range.selectNodeContents(elem);
+
+    var currentPos = 0;
+    var endPos = range.endOffset;
+
+    while (currentPos < endPos) {
+      range.setStart(elem, currentPos);
+      range.setEnd(elem, currentPos + 1);
+
+      var rect = range.getBoundingClientRect();
+
+      if (
+        rect.left <= x &&
+        rect.right >= x &&
+        rect.top <= y &&
+        rect.bottom >= y
+      ) {
+        var charUnderCursor = range.toString();
+        range.detach();
+        return charUnderCursor;
+      }
+
+      currentPos += 1;
+    }
+  } else {
+    for (var i = 0; i < elem.childNodes.length; i++) {
+      var result = getCharacterAtPoint(elem.childNodes[i], x, y);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return null;
+}
 
 function getWordAtPoint(elem, x, y) {
   if (elem.nodeType == elem.TEXT_NODE) {
