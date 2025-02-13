@@ -1,17 +1,17 @@
 {
-  "name": "K Study",
-  "description": "Look up korean words on mouse hover",
-  "version": "1.0",
+  "name": "사전 - Korean Reader",
+  "description": "Translate Korean by hovering over words.",
+  "version": "0.1",
   "manifest_version": 3,
   "icons": {
-    "16": "images/kstudy_logo_16.png",
-    "32": "images/kstudy_logo_32.png",
-    "48": "images/kstudy_logo_48.png",
-    "128": "images/kstudy_logo_128.png"
+    "16": "images/icon_16.png",
+    "32": "images/icon_32.png",
+    "48": "images/icon_48.png",
+    "128": "images/icon_128.png"
   },
   "action": {
     "default_popup": "index.html",
-    "default_icon": "images/kstudy_logo_1024.png"
+    "default_icon": "images/icon_1024.png"
   },
   "content_scripts": [
     {
@@ -20,9 +20,9 @@
     }
   ],
   "web_accessible_resources": [
-      {
-        "resources": ["data/dict_most_frequent.json"],
-        "matches": ["<all_urls>"]
-      }
-    ]
+    {
+      "resources": ["data/dict_most_frequent.json"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

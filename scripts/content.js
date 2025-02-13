@@ -20,7 +20,6 @@ document.addEventListener("mousemove", function (e) {
   let hoveredWord = getWordAtPoint(e.target, e.clientX, e.clientY);
   if (hoveredWord) {
     if (isKorean(hoveredWord)) {
-      // console.log("Word: " + hoveredWord);
       if (db !== null) {
         let isMatch = false;
         for (let i in db) {
