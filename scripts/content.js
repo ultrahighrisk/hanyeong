@@ -1,6 +1,8 @@
+// Fetch the JSON dictionary from the extension's data folder
 const jsonUrl = chrome.runtime.getURL("data/dict_most_frequent.json");
-let db = null;
+let db;
 
+// Load the dictionary and store it in a Map for fast lookups
 fetch(jsonUrl)
   .then((response) => {
     if (!response.ok) {
@@ -9,88 +11,71 @@ fetch(jsonUrl)
     return response.json();
   })
   .then((data) => {
-    console.log("Loaded JSON:", data[0]);
+    console.log("Loaded JSON sample:", data[0]);
     db = new Map();
+    count = 0
     data.forEach(entry => {
-      if (entry.Hangul) {
-        if (!db.has(entry.Hangul)) {
-          db.set(entry.Hangul, []);
+      count += 1;
+      const hangul = entry.Hangul;
+      if (hangul) {
+        if (!db.has(hangul)) {
+          db.set(hangul, []);
         }
-        db.get(entry.Hangul).push(entry);
-      }
-      if (entry.TypeKr && entry.TypeKr !== entry.Hangul) {
-        if (!db.has(entry.TypeKr)) {
-          db.set(entry.TypeKr, []);
-        }
-        db.get(entry.TypeKr).push(entry);
+        db.get(hangul).push(entry);
       }
     });
-    console.log("Dictionary loaded into Map with", db.size, "unique words");
+    console.log("Entry count: ", count);
+    console.log("Dictionary loaded with", db.size, "unique words");
   })
   .catch((error) => {
     console.error("Error loading JSON:", error);
   });
 
+// Function to check if a string contains Korean characters
+function isKorean(text) {
+  return /[\uAC00-\uD7AF]/.test(text); // Matches basic Hangul range
+}
+
+// Function to get the word at the cursor position
+function getWordAtPoint(element, x, y) {
+  const range = document.caretRangeFromPoint(x, y);
+  if (!range) return null;
+  range.expand('word');
+  return range.toString().trim();
+}
+
+// List of common Korean particles to strip from nouns
+const particles = [
+  '을', '를', '이', '가', '은', '는', '에', '에서', '으로', '와',
+  '과', '도', '만', '조차', '마저', '까지', '부터', '에게', '한테',
+  '께', '보다', '처럼', '같이', '보다도', '따라', '대로'
+];
+
+// Function to get the base word by stripping particles
+function getBaseWord(word) {
+  for (const particle of particles) {
+    if (word.endsWith(particle)) {
+      return word.slice(0, -particle.length);
+    }
+  }
+  return word;
+}
+
+// Event listener for mouse movement to detect hovered words
 document.addEventListener("mousemove", function (e) {
   let hoveredWord = getWordAtPoint(e.target, e.clientX, e.clientY);
   if (hoveredWord && isKorean(hoveredWord) && db) {
-    if (db.has(hoveredWord)) {
-      const entries = db.get(hoveredWord);
+    const baseWord = getBaseWord(hoveredWord);
+    let entries;
+    if (db.has(baseWord)) {
+      entries = db.get(baseWord);
+      console.log("Matched entries for: " + baseWord, entries);
+    } else if (db.has(hoveredWord)) {
+      entries = db.get(hoveredWord);
       console.log("Matched entries for: " + hoveredWord, entries);
     } else {
       console.log("Match not found for: " + hoveredWord);
     }
+    // Future enhancement: Replace console.log with a tooltip to display entries
   }
 });
-
-const isKorean = (input) => {
-  const match = input.match(/[\u3130-\u318F\uAC00-\uD7AF]/g);
-  return match ? match.length === input.length : false;
-};
-
-function getWordAtPoint(elem, x, y) {
-  if (elem.nodeType == elem.TEXT_NODE) {
-    var range = elem.ownerDocument.createRange();
-    range.selectNodeContents(elem);
-
-    var currentPos = 0;
-    var endPos = range.endOffset;
-
-    while (currentPos + 1 < endPos) {
-      range.setStart(elem, currentPos);
-      range.setEnd(elem, currentPos + 1);
-
-      if (
-        range.getBoundingClientRect().left <= x &&
-        range.getBoundingClientRect().right >= x &&
-        range.getBoundingClientRect().top <= y &&
-        range.getBoundingClientRect().bottom >= y
-      ) {
-        range.expand("word");
-        var ret = range.toString();
-        range.detach();
-        return ret;
-      }
-
-      currentPos += 1;
-    }
-  } else {
-    for (var i = 0; i < elem.childNodes.length; i++) {
-      var range = elem.childNodes[i].ownerDocument.createRange();
-      range.selectNodeContents(elem.childNodes[i]);
-
-      if (
-        range.getBoundingClientRect().left <= x &&
-        range.getBoundingClientRect().right >= x &&
-        range.getBoundingClientRect().top <= y &&
-        range.getBoundingClientRect().bottom >= y
-      ) {
-        range.detach();
-        return getWordAtPoint(elem.childNodes[i], x, y);
-      } else {
-        range.detach();
-      }
-    }
-  }
-  return null;
-}
